@@ -5,13 +5,31 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
+from kivy.config import ConfigParser
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.metrics import dp
+from kivy.properties import ColorProperty
 from datetime import datetime
-import ast
 import os
+import ast
 import time
+from googletrans import Translator
+import requests
+import json
+
+
+class Product:
+    def __init__(self):
+        self.Weight = ""
+        self.Calories = ""
+        self.Proteins = ""
+        self.Fats = ""
+        self.Carboh = ""
+        self.Name = ""
+
+
+P = Product()
 
 
 class MenuScreen(Screen):
@@ -69,6 +87,61 @@ class SortedListFood(Screen):
     def on_leave(self):
 
         self.layout.clear_widgets()
+
+
+class LibraryFood(Screen):
+    def __init__(self, **kw):
+        super(LibraryFood, self).__init__(**kw)
+        self.Liblayout = GridLayout(cols=1, spacing=10, size_hint_y=1)
+        self.Liblayout.bind(minimum_height=self.Liblayout.setter('height'))
+        self.back_button = Button(text='< Назад',
+                                  on_press=lambda x: set_screen('add_food'),
+                                  size_hint_y=None, height=dp(40))
+        self.Seach_Text = TextInput(text='', multiline=False, height=dp(40),
+                                    size_hint_y=None, hint_text="Поиск")
+        self.Seach_Btn = Button(text='Поиск', size_hint_y=None, height=dp(40))
+        self.Seach_Btn.bind(on_press=self.Search_Func)
+        self.Liblayout.add_widget(self.back_button)
+        self.Liblayout.add_widget(self.Seach_Text)
+        self.Liblayout.add_widget(self.Seach_Btn)
+        self.Buflayout = GridLayout(cols=1, spacing=10, size_hint_y=0.75)
+        self.add_widget(self.Buflayout)
+        self.add_widget(self.Liblayout)
+
+    def on_enter(self):
+        self.Seach_Text.text = ''
+        self.Buflayout.clear_widgets()
+
+    def Choice(self, btn):
+        product = btn.text
+        global P
+        P.Name = product[0:product.find("(")]
+        P.Weight = product[product.find("(") + 1:product.find(" ", product.find("("))]
+        P.Calories = product[product.find("гр., ") + 5:product.find("ккал") - 1]
+        P.Proteins = product[product.find("ккал, ") + 6:product.find("белк") - 1]
+        P.Fats = product[product.find("белк, ") + 6:product.find("жир") - 1]
+        P.Carboh = product[product.find("жир, ") + 5:product.find("углв") - 1]
+        set_screen('add_food')
+
+    def Search_Func(self, btn):
+        Product = self.Seach_Text.text
+        translator = Translator()
+        result = translator.translate(Product)
+        link = 'https://api.nal.usda.gov/fdc/v1/foods/search?query=%s' \
+               '&pageSize=5&api_key=BZeMvKQVspWyoAgB3wJxy1MXdq6Ot5WNgvD3K5Bf' % result.text
+        if requests.get(link).ok:
+            response = requests.get(link).text
+            response = json.loads(response)
+            response = response['foods']
+            for i in range(len(response)):
+                prod = Product + "(%s гр., %s ккал, %s белк, %s жир, " \
+                                 "%s углв)" % ("100", response[i]['foodNutrients'][3]['value'],
+                                               response[i]['foodNutrients'][0]['value'],
+                                               response[i]['foodNutrients'][1]['value'],
+                                               response[i]['foodNutrients'][2]['value'])
+                btn = Button(text=prod, size_hint_y=None, height=dp(40))
+                btn.bind(on_press=self.Choice)
+                self.Buflayout.add_widget(btn)
 
 
 class AddFood(Screen):
@@ -130,6 +203,9 @@ class AddFood(Screen):
         AddBtn = Button(text="Добавить продукт", size_hint_y=None, height=dp(40))
         AddBtn.bind(on_press=self.buttonClicked)
         box.add_widget(AddBtn)
+        LibBtn = Button(text="Библиотека продуктов", size_hint_y=None, height=dp(40),
+                        on_press=lambda x: set_screen('lib_food'))
+        box.add_widget(LibBtn)
         self.result = Label(text='')
         box.add_widget(self.result)
         self.add_widget(box)
@@ -165,6 +241,7 @@ sm = ScreenManager()
 sm.add_widget(MenuScreen(name='menu'))
 sm.add_widget(SortedListFood(name='list_food'))
 sm.add_widget(AddFood(name='add_food'))
+sm.add_widget(LibraryFood(name='lib_food'))
 
 if __name__ == '__main__':
     FoodOptionsApp().run()
