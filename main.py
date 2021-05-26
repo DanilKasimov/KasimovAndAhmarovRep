@@ -70,6 +70,7 @@ class SortedListFood(Screen):
 
         self.layout.clear_widgets()
 
+
 class AddFood(Screen):
 
     def Prep(self, znach):
@@ -133,6 +134,7 @@ class AddFood(Screen):
         box.add_widget(self.result)
         self.add_widget(box)
 
+
 class FoodOptionsApp(App):
     def __init__(self, **kvargs):
         super(FoodOptionsApp, self).__init__(**kvargs)
@@ -153,7 +155,6 @@ class FoodOptionsApp(App):
 
     def build(self):
         return sm
-
 
 
 def set_screen(name_screen):
