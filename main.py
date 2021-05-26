@@ -139,22 +139,28 @@ class LibraryFood(Screen):
     def Search_Func(self, btn):
         Product = self.Seach_Text.text
         translator = Translator()
-        result = translator.translate(Product)
+        try:
+            result = translator.translate(Product)
+        except:
+            pass
         link = 'https://api.nal.usda.gov/fdc/v1/foods/search?query=%s' \
                '&pageSize=5&api_key=BZeMvKQVspWyoAgB3wJxy1MXdq6Ot5WNgvD3K5Bf' % result.text
-        if requests.get(link).ok:
-            response = requests.get(link).text
-            response = json.loads(response)
-            response = response['foods']
-            for i in range(len(response)):
-                prod = Product + "(%s гр., %s ккал, %s белк, %s жир, " \
-                                 "%s углв)" % ("100", response[i]['foodNutrients'][3]['value'],
-                                               response[i]['foodNutrients'][0]['value'],
-                                               response[i]['foodNutrients'][1]['value'],
-                                               response[i]['foodNutrients'][2]['value'])
-                btn = Button(text=prod, size_hint_y=None, height=dp(40))
-                btn.bind(on_press=self.Choice)
-                self.Buflayout.add_widget(btn)
+        try:
+            if requests.get(link).ok:
+                response = requests.get(link).text
+                response = json.loads(response)
+                response = response['foods']
+                for i in range(len(response)):
+                    prod = Product + "(%s гр., %s ккал, %s белк, %s жир, " \
+                                     "%s углв)" % ("100", response[i]['foodNutrients'][3]['value'],
+                                                   response[i]['foodNutrients'][0]['value'],
+                                                   response[i]['foodNutrients'][1]['value'],
+                                                   response[i]['foodNutrients'][2]['value'])
+                    btn = Button(text=prod, size_hint_y=None, height=dp(40))
+                    btn.bind(on_press=self.Choice)
+                    self.Buflayout.add_widget(btn)
+        except:
+            pass
 
 
 class AddFood(Screen):
