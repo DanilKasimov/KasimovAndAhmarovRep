@@ -70,7 +70,6 @@ class SortedListFood(Screen):
 
         self.layout.clear_widgets()
 
-
 class AddFood(Screen):
 
     def Prep(self, znach):
@@ -80,7 +79,29 @@ class AddFood(Screen):
             return 0
 
     def buttonClicked(self, btn1):
-        pass
+        if not self.txt1.text or not self.Calories.text \
+                or not self.Protein.text or not self.Fat.text or not self.Carboh.text or not self.Weight.text:
+            return
+        text = self.txt1.text + "(%s гр., %s ккал, %s белк, %s жир, %s углв)" % (self.Weight.text,
+                                                                                 self.Prep(self.Calories.text),
+                                                                                 self.Prep(self.Protein.text),
+                                                                                 self.Prep(self.Fat.text),
+                                                                                 self.Prep(self.Carboh.text))
+        self.result.text = text
+        self.app = App.get_running_app()
+        self.app.user_data = ast.literal_eval(
+            self.app.config.get('General', 'user_data'))
+        self.app.user_data[self.result.text.encode('u8')] = int(time.time())
+
+        self.app.config.set('General', 'user_data', self.app.user_data)
+        self.app.config.write()
+        self.result.text = "Последний добавленный продукт: " + text
+        self.txt1.text = ''
+        self.Carboh.text = ''
+        self.Fat.text = ''
+        self.Weight.text = ''
+        self.Protein.text = ''
+        self.Calories.text = ''
 
     def __init__(self, **kw):
         super(AddFood, self).__init__(**kw)
@@ -112,7 +133,6 @@ class AddFood(Screen):
         box.add_widget(self.result)
         self.add_widget(box)
 
-
 class FoodOptionsApp(App):
     def __init__(self, **kvargs):
         super(FoodOptionsApp, self).__init__(**kvargs)
@@ -133,6 +153,7 @@ class FoodOptionsApp(App):
 
     def build(self):
         return sm
+
 
 
 def set_screen(name_screen):
