@@ -73,6 +73,12 @@ class SortedListFood(Screen):
 
 class AddFood(Screen):
 
+    def Prep(self, znach):
+        try:
+            return round((float(znach) / 100) * float(self.Weight.text))
+        except:
+            return 0
+
     def buttonClicked(self, btn1):
         pass
 
