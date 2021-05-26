@@ -9,7 +9,6 @@ from kivy.config import ConfigParser
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.metrics import dp
-from kivy.properties import ColorProperty
 from datetime import datetime
 import os
 import ast
@@ -74,18 +73,32 @@ class SortedListFood(Screen):
 
         dic_foods = ast.literal_eval(
             App.get_running_app().config.get('General', 'user_data'))
-
-        for f, d in sorted(dic_foods.items(), key=lambda x: x[1]):
+        TodayCalories = 0.0
+        TodayProt = 0.0
+        TodayFat = 0.0
+        TodayCarboh = 0.0
+        arr = []
+        for f, d in sorted(dic_foods.items(), key=lambda x: x[1], reverse=True):
             if datetime.fromtimestamp(d).strftime('%Y-%m-%d') == datetime.today().strftime('%Y-%m-%d') or not self.Tod:
-                fd = f.decode('u8') + ' ' + (datetime.fromtimestamp(d).strftime('%Y-%m-%d'))
+                product = f.decode('u8')
+                fd = product + ' ' + (datetime.fromtimestamp(d).strftime('%Y-%m-%d'))
+                TodayCalories += float(product[product.find("гр., ") + 5:product.find("ккал") - 1])
+                TodayProt += float(product[product.find("ккал, ") + 6:product.find("белк") - 1])
+                TodayFat += float(product[product.find("белк, ") + 6:product.find("жир") - 1])
+                TodayCarboh += float(product[product.find("жир, ") + 5:product.find("углв") - 1])
                 btn = Button(text=fd, size_hint_y=None, height=dp(40))
-                self.layout.add_widget(btn)
+                arr.append(btn)
+        if self.Tod:
+            btn1 = Button(text="За сегодня вы съели: %s ккал, %s белк, %s жир, %s углв"
+                               % (TodayCalories, TodayProt, TodayFat, TodayCarboh), size_hint_y=None, height=dp(40))
+            self.layout.add_widget(btn1)
+        for i in arr:
+            self.layout.add_widget(i)
 
     def on_enter(self):
         self.build()
 
     def on_leave(self):
-
         self.layout.clear_widgets()
 
 
@@ -210,10 +223,21 @@ class AddFood(Screen):
         box.add_widget(self.result)
         self.add_widget(box)
 
+    def on_enter(self):
+        global P
+        self.txt1.text = P.Name
+        self.Fat.text = P.Fats
+        self.Carboh.text = P.Carboh
+        self.Weight.text = P.Weight
+        self.Protein.text = P.Proteins
+        self.Calories.text = P.Calories
+        P = Product()
+
 
 class FoodOptionsApp(App):
     def __init__(self, **kvargs):
         super(FoodOptionsApp, self).__init__(**kvargs)
+        self.config = ConfigParser()
 
     def build_config(self, config):
         config.adddefaultsection('General')
@@ -221,11 +245,10 @@ class FoodOptionsApp(App):
 
     def set_value_from_config(self):
         self.config.read(os.path.join(self.directory, '%(appname)s.ini'))
-
         self.user_data = ast.literal_eval(self.config.get(
             'General', 'user_data'))
 
-    def get_application_config(self, **kwargs):
+    def get_application_config(self):
         return super(FoodOptionsApp, self).get_application_config(
             '{}/%(appname)s.ini'.format(self.directory))
 
