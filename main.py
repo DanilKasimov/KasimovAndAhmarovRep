@@ -139,11 +139,7 @@ class LibraryFood(Screen):
     def Search_Func(self, btn):
         Product = self.Seach_Text.text
         translator = Translator()
-        result = None
-        try:
-            result = translator.translate(Product)
-        except:
-            pass
+        result = translator.translate(Product)
         link = 'https://api.nal.usda.gov/fdc/v1/foods/search?query=%s' \
                '&pageSize=5&api_key=BZeMvKQVspWyoAgB3wJxy1MXdq6Ot5WNgvD3K5Bf' % result.text
         try:
