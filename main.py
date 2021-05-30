@@ -139,6 +139,7 @@ class LibraryFood(Screen):
     def Search_Func(self, btn):
         Product = self.Seach_Text.text
         translator = Translator()
+        result = None
         try:
             result = translator.translate(Product)
         except:
