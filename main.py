@@ -12,10 +12,7 @@ from kivy.metrics import dp
 from datetime import datetime
 import os
 import ast
-import time
 from googletrans import Translator
-import requests
-import json
 
 
 class Product:
@@ -137,8 +134,11 @@ class LibraryFood(Screen):
         set_screen('add_food')
 
     def Search_Func(self, btn):
+        import requests
+        import json
         Product = self.Seach_Text.text
         translator = Translator()
+        result = None
         try:
             result = translator.translate(Product)
         except:
@@ -172,6 +172,7 @@ class AddFood(Screen):
             return 0
 
     def buttonClicked(self, btn1):
+        import time
         if not self.txt1.text or not self.Calories.text \
                 or not self.Protein.text or not self.Fat.text or not self.Carboh.text or not self.Weight.text:
             return
