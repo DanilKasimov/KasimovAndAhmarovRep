@@ -142,6 +142,7 @@ class LibraryFood(Screen):
         result = translator.translate(Product)
         link = 'https://api.nal.usda.gov/fdc/v1/foods/search?query=%s' \
                '&pageSize=5&api_key=BZeMvKQVspWyoAgB3wJxy1MXdq6Ot5WNgvD3K5Bf' % result.text
+        #print(link)
         try:
             if requests.get(link).ok:
                 response = requests.get(link).text
